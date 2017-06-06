@@ -1,0 +1,100 @@
+// ServiceWCF.prj
+// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+// Program.cs
+using System;
+using System.ServiceModel;
+
+namespace ServiceWCF
+{
+    [ServiceContract]
+    interface IContractService
+    {
+        [OperationContract]
+        double Method(string s);
+    }
+
+    class MyService : IContractService
+    {
+        public double Method(string s)
+        {
+            Console.WriteLine("Обработан запрос {0}", s);
+            if (s == "double")
+                return 777.77;
+            else
+                return 0;
+        }
+    }
+    class Service
+    {
+        static void Main(string[] args)
+        {
+            Console.Title = "SERVER";
+            ServiceHost host = new ServiceHost(typeof(MyService));
+            host.Open();
+            Console.WriteLine("Host started...");
+            Console.ReadKey();
+            host.Close();
+
+        }
+    }
+}
+// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+// App.config
+<?xml version="1.0" encoding="utf-8" ?>
+<configuration>
+  <system.serviceModel>
+    <services>
+      <service name="ServiceWCF.MyService">
+        <host>
+          <baseAddresses>
+            <add baseAddress ="http://localhost:8000/ServiceWCF"/>
+          </baseAddresses>
+        </host>
+        
+        <!-- Указание адреса, привязки и контракта -->
+        <endpoint address =""
+                  binding ="basicHttpBinding"
+                  contract="ServiceWCF.IContractService" />
+      </service>
+    </services>
+  </system.serviceModel> 
+    <startup> 
+        <supportedRuntime version="v4.0" sku=".NETFramework,Version=v4.5.2" />
+    </startup>
+</configuration>
+// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+// ClientWCF.prj
+// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+// Program.cs
+using System;
+using System.ServiceModel;
+
+namespace ClientWCF
+{
+    [ServiceContract]
+    interface IContractService
+    {
+        [OperationContract]
+        double Method(string s);
+    }
+
+    class Client
+    {
+        static void Main(string[] args)
+        {
+            Console.Title = "CLIENT";
+            ChannelFactory<IContractService> fact =
+                new ChannelFactory<IContractService>(new BasicHttpBinding(), new EndpointAddress("http://localhost:8000/ServiceWCF"));
+
+            IContractService service = fact.CreateChannel();
+
+            double digit = service.Method("double");
+
+            Console.WriteLine("Double: {0}", digit);
+            Console.ReadKey();
+
+        }
+    }
+}
+
+
